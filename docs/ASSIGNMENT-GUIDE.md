@@ -9,7 +9,7 @@ Selected Part 2 option: SonarCloud only. Email Extension is not part of this sub
 | Requirement | Implementation |
 | --- | --- |
 | Part 1 Task 1: seven mock stages, only task/tool descriptions | `Jenkinsfile.mock` |
-| Commit-triggered execution | Poll SCM every minute in mock job; configure Pipeline from SCM, main branch, lightweight checkout |
+| Commit-triggered execution | Poll SCM every minute in mock job; configure Pipeline from SCM, main branch, full SCM retrieval |
 | Part 1 Task 2: five required stages | `Jenkinsfile.part1` |
 | Part 2 Task 1: retain five stages, add SonarCloud Analysis | `Jenkinsfile` |
 | Scanner downloaded as official ZIP and extracted | `ci/sonar-scan.sh` |
@@ -38,7 +38,7 @@ Jobs use Pipeline script from SCM / Git / repository URL above / branch `*/main`
 - `82C-Part1-DevSecOps`: script path `Jenkinsfile.part1`.
 - `82C-Part2-SonarCloud`: script path `Jenkinsfile`.
 
-Run each once manually to establish its SCM/polling baseline. After that push a real new commit, wait for polling and verify the build cause reads `Started by an SCM change`. Do not press Build Now for the automatic-trigger evidence. Reading the Jenkinsfile through lightweight SCM preserves the Task 1 mock's seven echo-only stages.
+Run each once manually to establish its SCM/polling baseline. After that push a real new commit, wait for polling and verify the build cause reads `Started by an SCM change`. Do not press Build Now for the automatic-trigger evidence. Disable lightweight checkout for the mock job: Jenkins retrieves its script through Git before the pipeline starts, which records the baseline required for polling. The seven pipeline stages remain echo-only.
 
 ## Finish SonarCloud configuration
 
