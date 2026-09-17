@@ -1,0 +1,50 @@
+pipeline {
+    agent any
+    options { skipDefaultCheckout(true); timestamps(); disableConcurrentBuilds(); timeout(time: 30, unit: 'MINUTES') }
+    triggers { pollSCM('H/5 * * * *') }
+    stages {
+        stage('Checkout') {
+            steps {
+                deleteDir()
+                checkout scm
+            }
+        }
+        stage('Install Dependencies') {
+            steps { sh 'node --version && npm --version && sh ci/run-report.sh install npm install --no-fund' }
+        }
+        stage('Run Tests') {
+            steps {
+                catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
+                    sh 'sh ci/run-report.sh tests npm test'
+                }
+            }
+        }
+        stage('Generate Coverage Report') {
+            steps {
+                catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
+                    sh 'sh ci/run-report.sh coverage npm run coverage'
+                    sh 'test -s coverage/lcov.info'
+                }
+            }
+        }
+        stage('NPM Audit (Security Scan)') {
+            steps {
+                catchError(buildResult: 'UNSTABLE', stageResult: 'UNSTABLE') {
+                    sh 'sh ci/run-report.sh npm-audit npm audit'
+                }
+            }
+        }
+        stage('SonarCloud Analysis') {
+            steps {
+                withCredentials([string(credentialsId: 'SONAR_TOKEN', variable: 'SONAR_TOKEN')]) {
+                    sh 'sh ci/sonar-scan.sh'
+                }
+            }
+        }
+    }
+    post {
+        always {
+            archiveArtifacts artifacts: 'reports/**,coverage/lcov.info,.scannerwork/report-task.txt', allowEmptyArchive: true
+        }
+    }
+}

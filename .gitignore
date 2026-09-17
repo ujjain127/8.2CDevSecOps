@@ -12,3 +12,12 @@ npm-debug.log
 .idea/
 .dccache
 
+
+# Assignment build outputs and local credentials
+coverage/
+reports/
+.scannerwork/
+.tools/
+.env
+.env.*
+*.pem
